@@ -12,3 +12,25 @@ datasource db {
   provider = "postgresql"
   url      = env("DATABASE_URL")
 }
+
+model Screens {
+  id        Int       @id @default(autoincrement())
+  name      String
+  is_system Boolean
+  presets   Presets[]
+
+  @@map("screens")
+}
+
+model Presets {
+  id        Int     @id @default(autoincrement())
+  type      String
+  title     String?
+  subtitle  String?
+  image     String?
+  position  Int
+  screen    Screens @relation(fields: [screen_id], references: [id])
+  screen_id Int
+
+  @@map("presets")
+}
