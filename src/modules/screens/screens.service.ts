@@ -6,25 +6,46 @@ import { CreateScreenDto } from './screens.dto';
 export class ScreensService {
   constructor(private readonly prismaService: PrismaService) {}
 
-  async getScreens() {
+  async getScreens(merchantId: number) {
     return this.prismaService.screens.findMany({
+      where: {
+        merchant: { id: merchantId },
+      },
       select: {
         id: true,
         name: true,
-        is_system: true,
+        isSystem: true,
       },
     });
   }
 
-  async getScreenById(screenId: number) {
+  async getScreenById(screenId: string | number) {
+    if (isNaN(parseFloat(screenId as string))) {
+      return this.prismaService.screens.findFirst({
+        where: {
+          name: screenId as string,
+        },
+        select: {
+          id: true,
+          name: true,
+          isSystem: true,
+          presets: {
+            orderBy: {
+              position: 'asc',
+            },
+          },
+        },
+      });
+    }
+
     return this.prismaService.screens.findUnique({
       where: {
-        id: screenId,
+        id: parseInt(screenId as string),
       },
       select: {
         id: true,
         name: true,
-        is_system: true,
+        isSystem: true,
         presets: {
           orderBy: {
             position: 'asc',
@@ -34,14 +55,15 @@ export class ScreensService {
     });
   }
 
-  async createScreen(body: CreateScreenDto) {
+  async createScreen(merchantId: number, body: CreateScreenDto) {
     await this.prismaService.screens.create({
       data: {
         name: body.name,
-        is_system: false,
+        isSystem: false,
+        merchant: { connect: { id: merchantId } },
       },
     });
 
-    return this.getScreens();
+    return this.getScreens(merchantId);
   }
 }

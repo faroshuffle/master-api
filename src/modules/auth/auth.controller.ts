@@ -1,0 +1,54 @@
+import {
+  Body,
+  Controller,
+  HttpException,
+  Logger,
+  Post,
+  Response,
+} from '@nestjs/common';
+import { AuthService } from './auth.service';
+import { LoginDto, SignUp } from './auth.dto';
+import { Public } from 'constants/metadata.constants';
+
+@Controller('auth')
+export class AuthController {
+  private readonly logger = new Logger(AuthController.name);
+  constructor(private readonly authService: AuthService) {}
+
+  @Public()
+  @Post('login')
+  async login(@Body() body: LoginDto, @Response() res: any) {
+    try {
+      const response = await this.authService.login(body);
+      res
+        .cookie('accessToken', response.access_token, {
+          expires: new Date(new Date().setDate(new Date().getDate() + 7)),
+          sameSite: 'none',
+          secure: true,
+          httpOnly: true,
+        })
+        .send({ success: true });
+    } catch (e) {
+      this.logger.error(e);
+      throw new HttpException(e.message, e.status);
+    }
+  }
+
+  @Public()
+  @Post('signUp')
+  async signUp(@Body() body: SignUp) {
+    try {
+      const response = await this.authService.signUp(body);
+
+      return { success: true, data: response };
+    } catch (e) {
+      this.logger.error(e);
+      throw new HttpException(e.message, e.status);
+    }
+  }
+
+  @Post('logout')
+  async logout(@Response() res: any) {
+    res.clearCookie('accessToken').send({ success: true });
+  }
+}

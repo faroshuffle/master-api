@@ -1,6 +1,7 @@
 import {
   Body,
   Controller,
+  Delete,
   Get,
   HttpException,
   Logger,
@@ -9,7 +10,11 @@ import {
   Put,
 } from '@nestjs/common';
 import { PresetsService } from './presets.service';
-import { CreatePresetDto, UpdatePresetDto } from './presets.dto';
+import {
+  CreatePresetDto,
+  ReorderPreset2,
+  UpdatePresetDto,
+} from './presets.dto';
 
 @Controller('presets')
 export class PresetsController {
@@ -48,6 +53,24 @@ export class PresetsController {
     }
   }
 
+  @Post(':screenId/reorder')
+  async reorderPresets(
+    @Param('screenId') screenId: string,
+    @Body() body: ReorderPreset2,
+  ) {
+    try {
+      const response = await this.presetsService.reorderPresets(
+        parseInt(screenId),
+        body,
+      );
+
+      return { success: true, screen: response };
+    } catch (e) {
+      this.logger.error(e);
+      throw new HttpException(e.message, e.status);
+    }
+  }
+
   @Put(':presetId')
   async updatePresetById(
     @Param('presetId') presetId: string,
@@ -57,6 +80,20 @@ export class PresetsController {
       const response = await this.presetsService.updatePresetById(
         parseInt(presetId),
         body,
+      );
+
+      return { success: true, screen: response };
+    } catch (e) {
+      this.logger.error(e);
+      throw new HttpException(e.message, e.status);
+    }
+  }
+
+  @Delete(':presetId')
+  async deletePresetById(@Param('presetId') presetId: string) {
+    try {
+      const response = await this.presetsService.deletePresetById(
+        parseInt(presetId),
       );
 
       return { success: true, screen: response };

@@ -4,4 +4,8 @@ export default () => ({
   cloudinary_name: process.env.CLOUDINARY_NAME,
   cloudinary_public: process.env.CLOUDINARY_PUBLIC,
   cloudinary_private: process.env.CLOUDINARY_PRIVATE,
+  woo_commerce_public_key: process.env.WOO_COMMERCE_PUBLIC_KEY,
+  woo_commerce_private_key: process.env.WOO_COMMERCE_PRIVATE_KEY,
+  localhost_src_replacement: process.env.LOCALHOST_SRC_REPLACEMENT,
+  jwt_secret: process.env.JWT_SECRET,
 });

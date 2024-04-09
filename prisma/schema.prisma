@@ -13,24 +13,42 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
-model Screens {
+model Merchants {
   id        Int       @id @default(autoincrement())
-  name      String
-  is_system Boolean
-  presets   Presets[]
+  username  String    @unique
+  password  String
+  firstName String    @map("first_name")
+  lastName  String    @map("last_name")
+  email     String
+  Screens   Screens[]
+
+  @@map("merchants")
+}
+
+model Screens {
+  id          Int       @id @default(autoincrement())
+  name        String
+  isSystem    Boolean   @map("is_system")
+  presets     Presets[] @relation("PartOfScreen")
+  targets     Presets[] @relation("PresetGoesToScreen")
+  merchant    Merchants @relation(fields: [merchantsId], references: [id])
+  merchantsId Int
 
   @@map("screens")
 }
 
 model Presets {
-  id        Int     @id @default(autoincrement())
-  type      String
-  title     String?
-  subtitle  String?
-  image     String?
-  position  Int
-  screen    Screens @relation(fields: [screen_id], references: [id])
-  screen_id Int
+  id       Int      @id @default(autoincrement())
+  type     String
+  title    String?
+  subtitle String?
+  image    String?
+  cta      String?
+  position Int
+  screen   Screens  @relation("PartOfScreen", fields: [screenId], references: [id])
+  screenId Int      @map("screen_id")
+  target   Screens? @relation("PresetGoesToScreen", fields: [targetId], references: [id])
+  targetId Int?     @map("target_id")
 
   @@map("presets")
 }

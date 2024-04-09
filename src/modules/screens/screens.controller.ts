@@ -6,6 +6,7 @@ import {
   Logger,
   Param,
   Post,
+  Headers,
 } from '@nestjs/common';
 import { ScreensService } from './screens.service';
 import { CreateScreenDto } from './screens.dto';
@@ -16,10 +17,9 @@ export class ScreensController {
   constructor(private readonly screensService: ScreensService) {}
 
   @Get('/')
-  async getScreens() {
+  async getScreens(@Headers('merchantid') merchantId: number) {
     try {
-      const response = await this.screensService.getScreens();
-
+      const response = await this.screensService.getScreens(merchantId);
       return { success: true, screens: response };
     } catch (e) {
       this.logger.error(e);
@@ -30,9 +30,7 @@ export class ScreensController {
   @Get(':screenId')
   async getScreenById(@Param('screenId') screenId: string) {
     try {
-      const response = await this.screensService.getScreenById(
-        parseInt(screenId),
-      );
+      const response = await this.screensService.getScreenById(screenId);
 
       return { success: true, screen: response };
     } catch (e) {
@@ -42,9 +40,12 @@ export class ScreensController {
   }
 
   @Post('/')
-  async createScreen(@Body() body: CreateScreenDto) {
+  async createScreen(
+    @Headers('merchantid') merchantId: number,
+    @Body() body: CreateScreenDto,
+  ) {
     try {
-      const response = await this.screensService.createScreen(body);
+      const response = await this.screensService.createScreen(merchantId, body);
 
       return { success: true, screens: response };
     } catch (e) {
