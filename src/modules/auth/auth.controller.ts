@@ -5,9 +5,10 @@ import {
   Logger,
   Post,
   Response,
+  Headers,
 } from '@nestjs/common';
 import { AuthService } from './auth.service';
-import { LoginDto, SignUp } from './auth.dto';
+import { AddKeys, LoginDto, SignUp } from './auth.dto';
 import { Public } from 'constants/metadata.constants';
 
 @Controller('auth')
@@ -47,8 +48,28 @@ export class AuthController {
     }
   }
 
+  @Post('keys')
+  async addKeys(
+    @Headers('merchantid') merchantId: number,
+    @Body() body: AddKeys,
+  ) {
+    try {
+      const response = await this.authService.addKeys(merchantId, body);
+
+      return { success: true, data: response };
+    } catch (e) {
+      this.logger.error(e);
+      throw new HttpException(e.message, e.status);
+    }
+  }
+
   @Post('logout')
-  async logout(@Response() res: any) {
+  async logout(
+    @Headers('merchantid') merchantId: number,
+    @Response() res: any,
+  ) {
+    await this.authService.logout(merchantId);
+
     res.clearCookie('accessToken').send({ success: true });
   }
 }

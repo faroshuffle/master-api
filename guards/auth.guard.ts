@@ -9,12 +9,14 @@ import { Request } from 'express';
 import { ConfigService } from '@nestjs/config';
 import { IS_PUBLIC_KEY } from '../constants/metadata.constants';
 import { Reflector } from '@nestjs/core';
+import { CacheService } from '../src/services/cache.service';
 
 @Injectable()
 export class AuthGuard implements CanActivate {
   constructor(
     private readonly jwtService: JwtService,
     private readonly configService: ConfigService,
+    private readonly cacheService: CacheService,
     private readonly reflector: Reflector,
   ) {}
 
@@ -23,24 +25,32 @@ export class AuthGuard implements CanActivate {
       context.getHandler(),
       context.getClass(),
     ]);
+    const request = context.switchToHttp().getRequest();
+
     if (isPublic) {
-      // 💡 See this condition
+      if (request.headers.merchantid) {
+        request.headers.merchantid = parseInt(request.headers.merchantid);
+
+        request.headers.woocommercekeys = await this.cacheService.getCacheValue(
+          request.headers.merchantid,
+        );
+      }
+
       return true;
     }
 
-    const request = context.switchToHttp().getRequest();
     const token = this.extractTokenFromHeader(request);
     if (!token) {
       throw new UnauthorizedException({ status: 401 });
     }
     try {
-      // 💡 We're assigning the payload to the request object here
-      // so that we can access it in our route handlers
       const payload = await this.jwtService.verifyAsync(token, {
         secret: this.configService.get('jwt_secret'),
       });
+      const keys = await this.cacheService.getCacheValue(payload.id.toString());
 
       request.headers.merchantid = payload.id;
+      request.headers.woocommercekeys = keys;
     } catch {
       throw new UnauthorizedException();
     }

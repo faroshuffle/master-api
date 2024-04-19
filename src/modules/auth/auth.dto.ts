@@ -25,3 +25,26 @@ export class SignUp {
   @IsEmail()
   email: string;
 }
+
+export class AddKeys {
+  @IsString()
+  publicKey: string;
+
+  @IsString()
+  privateKey: string;
+}
+
+export class CreateUserDto {
+  @IsString()
+  @IsEmail()
+  email: string;
+
+  @IsString()
+  password: string;
+
+  @IsString()
+  firstName: string;
+
+  @IsString()
+  lastName: string;
+}

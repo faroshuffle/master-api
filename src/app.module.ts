@@ -12,6 +12,9 @@ import { APP_GUARD } from '@nestjs/core';
 import { AuthGuard } from '../guards/auth.guard';
 import { JwtService } from '@nestjs/jwt';
 import { MerchantsModule } from './modules/merchants/merchants.module';
+import { CacheModule } from '@nestjs/cache-manager';
+import { CacheService } from './services/cache.service';
+import { CartModule } from './modules/cart/cart.module';
 
 @Module({
   imports: [
@@ -19,12 +22,14 @@ import { MerchantsModule } from './modules/merchants/merchants.module';
       isGlobal: true,
       load: [config],
     }),
+    CacheModule.register({ isGlobal: true }),
     AuthModule,
     ScreensModule,
     PresetsModule,
     UploadModule,
     ProductsModule,
     MerchantsModule,
+    CartModule,
   ],
   providers: [
     {
@@ -34,6 +39,7 @@ import { MerchantsModule } from './modules/merchants/merchants.module';
     JwtService,
     PrismaService,
     WooService,
+    CacheService,
   ],
 })
 export class AppModule {}

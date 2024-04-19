@@ -6,6 +6,7 @@ import {
   Logger,
 } from '@nestjs/common';
 import { MerchantsService } from './merchants.service';
+import { WooCommerceKeysTypes } from '../../../constants/WooCommerceKeys.types';
 
 @Controller('merchants')
 export class MerchantsController {
@@ -13,8 +14,15 @@ export class MerchantsController {
   constructor(private readonly merchantsService: MerchantsService) {}
 
   @Get()
-  async getMe(@Headers('merchantid') merchantId: number) {
+  async getMe(
+    @Headers('merchantid') merchantId: number,
+    @Headers('woocommercekeys') wooCommerceKeys: WooCommerceKeysTypes,
+  ) {
     try {
+      if (!wooCommerceKeys) {
+        return { success: false, data: 'Missing keys' };
+      }
+
       const response = await this.merchantsService.getMe(merchantId);
 
       return { success: true, data: response };

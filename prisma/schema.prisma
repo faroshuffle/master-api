@@ -14,25 +14,46 @@ datasource db {
 }
 
 model Merchants {
-  id        Int       @id @default(autoincrement())
-  username  String    @unique
-  password  String
-  firstName String    @map("first_name")
-  lastName  String    @map("last_name")
-  email     String
-  Screens   Screens[]
+  id              Int               @id @default(autoincrement())
+  username        String            @unique
+  password        String
+  firstName       String            @map("first_name")
+  lastName        String            @map("last_name")
+  email           String
+  Screens         Screens[]
+  WooCommerceKeys WooCommerceKeys[]
 
   @@map("merchants")
 }
 
+model Users {
+  id        Int    @id @default(autoincrement())
+  password  String
+  firstName String @map("first_name")
+  lastName  String @map("last_name")
+  email     String
+
+  @@map("users")
+}
+
+model WooCommerceKeys {
+  id         Int       @id @default(autoincrement())
+  merchant   Merchants @relation(fields: [merchantId], references: [id])
+  merchantId Int
+  publicKey  String    @map("public_key")
+  privateKey String    @map("private_key")
+
+  @@map("wooCommerceKeys")
+}
+
 model Screens {
-  id          Int       @id @default(autoincrement())
-  name        String
-  isSystem    Boolean   @map("is_system")
-  presets     Presets[] @relation("PartOfScreen")
-  targets     Presets[] @relation("PresetGoesToScreen")
-  merchant    Merchants @relation(fields: [merchantsId], references: [id])
-  merchantsId Int
+  id         Int       @id @default(autoincrement())
+  name       String
+  isSystem   Boolean   @map("is_system")
+  presets    Presets[] @relation("PartOfScreen")
+  targets    Presets[] @relation("PresetGoesToScreen")
+  merchant   Merchants @relation(fields: [merchantId], references: [id])
+  merchantId Int
 
   @@map("screens")
 }

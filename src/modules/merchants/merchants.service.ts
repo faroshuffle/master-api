@@ -18,4 +18,14 @@ export class MerchantsService {
       },
     });
   }
+
+  async generateMerchantDefaults(merchantId: number) {
+    await this.prismaService.screens.create({
+      data: {
+        name: 'Home',
+        isSystem: true,
+        merchant: { connect: { id: merchantId } },
+      },
+    });
+  }
 }
