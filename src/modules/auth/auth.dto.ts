@@ -48,3 +48,12 @@ export class CreateUserDto {
   @IsString()
   lastName: string;
 }
+
+export class LoginUserDto {
+  @IsString()
+  @IsEmail()
+  email: string;
+
+  @IsString()
+  password: string;
+}

@@ -1,14 +1,7 @@
-import {
-  Body,
-  Controller,
-  HttpException,
-  Logger,
-  Post,
-  Response,
-} from '@nestjs/common';
+import { Body, Controller, HttpException, Logger, Post } from '@nestjs/common';
 import { Public } from 'constants/metadata.constants';
 import { AuthService } from './auth.service';
-import { CreateUserDto } from './auth.dto';
+import { CreateUserDto, LoginUserDto } from './auth.dto';
 
 @Public()
 @Controller('user')
@@ -17,17 +10,23 @@ export class AuthUserController {
   constructor(private readonly authService: AuthService) {}
 
   @Post()
-  async create(@Body() body: CreateUserDto, @Response() res: any) {
+  async create(@Body() body: CreateUserDto) {
     try {
       const response = await this.authService.createUser(body);
-      res
-        .cookie('accessToken', response.access_token, {
-          expires: new Date(new Date().setDate(new Date().getDate() + 7)),
-          sameSite: 'none',
-          secure: true,
-          httpOnly: true,
-        })
-        .send({ success: true });
+
+      return { success: true, accessToken: response.access_token };
+    } catch (e) {
+      this.logger.error(e);
+      throw new HttpException(e.message, e.status);
+    }
+  }
+
+  @Post('login')
+  async login(@Body() body: LoginUserDto) {
+    try {
+      const response = await this.authService.loginUser(body);
+
+      return { success: true, accessToken: response.access_token };
     } catch (e) {
       this.logger.error(e);
       throw new HttpException(e.message, e.status);

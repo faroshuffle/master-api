@@ -1,7 +1,13 @@
 import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import { PrismaService } from '../../services/prisma.service';
-import { AddKeys, CreateUserDto, LoginDto, SignUp } from './auth.dto';
+import {
+  AddKeys,
+  CreateUserDto,
+  LoginDto,
+  LoginUserDto,
+  SignUp,
+} from './auth.dto';
 import { hash, compare } from 'bcrypt';
 import { ConfigService } from '@nestjs/config';
 import { MerchantsService } from '../merchants/merchants.service';
@@ -99,6 +105,33 @@ export class AuthService {
         lastName: true,
       },
     });
+
+    return {
+      access_token: await this.jwtService.signAsync(
+        {
+          id: user.id,
+          firstName: user.firstName,
+          lastName: user.lastName,
+        },
+        { secret: this.configService.get('jwt_secret') },
+      ),
+    };
+  }
+
+  async loginUser(body: LoginUserDto) {
+    const user = await this.prismaService.users.findFirst({
+      where: { email: body.email },
+    });
+
+    if (!user) {
+      throw new HttpException('Not found', HttpStatus.NOT_FOUND);
+    }
+
+    const isValid = await compare(body.password, user.password);
+
+    if (!isValid) {
+      throw new HttpException('Unauthorized', HttpStatus.UNAUTHORIZED);
+    }
 
     return {
       access_token: await this.jwtService.signAsync(

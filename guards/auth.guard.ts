@@ -34,6 +34,15 @@ export class AuthGuard implements CanActivate {
         request.headers.woocommercekeys = await this.cacheService.getCacheValue(
           request.headers.merchantid,
         );
+
+        const userToken = this.extractUserToken(request);
+        if (userToken) {
+          const payload = await this.jwtService.verifyAsync(userToken, {
+            secret: this.configService.get('jwt_secret'),
+          });
+
+          request.headers.userid = payload.id;
+        }
       }
 
       return true;
@@ -51,6 +60,15 @@ export class AuthGuard implements CanActivate {
 
       request.headers.merchantid = payload.id;
       request.headers.woocommercekeys = keys;
+
+      const userToken = this.extractUserToken(request);
+      if (userToken) {
+        const payload = await this.jwtService.verifyAsync(userToken, {
+          secret: this.configService.get('jwt_secret'),
+        });
+
+        request.headers.userid = payload.id;
+      }
     } catch {
       throw new UnauthorizedException();
     }
@@ -59,5 +77,9 @@ export class AuthGuard implements CanActivate {
 
   private extractTokenFromHeader(request: Request): string | undefined {
     return request.cookies.accessToken;
+  }
+
+  private extractUserToken(request: Request): string | undefined {
+    return request.headers.authorization;
   }
 }

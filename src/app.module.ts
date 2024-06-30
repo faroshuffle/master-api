@@ -15,6 +15,8 @@ import { MerchantsModule } from './modules/merchants/merchants.module';
 import { CacheModule } from '@nestjs/cache-manager';
 import { CacheService } from './services/cache.service';
 import { CartModule } from './modules/cart/cart.module';
+import { CheckoutModule } from './modules/checkout/checkout.module';
+import { StripeService } from './services/stripe.service';
 
 @Module({
   imports: [
@@ -30,6 +32,7 @@ import { CartModule } from './modules/cart/cart.module';
     ProductsModule,
     MerchantsModule,
     CartModule,
+    CheckoutModule,
   ],
   providers: [
     {
@@ -40,6 +43,7 @@ import { CartModule } from './modules/cart/cart.module';
     PrismaService,
     WooService,
     CacheService,
+    StripeService,
   ],
 })
 export class AppModule {}

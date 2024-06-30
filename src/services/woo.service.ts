@@ -102,7 +102,6 @@ export class WooService {
     wooCommerceKeys: WooCommerceKeysTypes,
     body: GetProductsDto,
   ) {
-    //[{"productId": 45, "variationId": 47}, {"productId": 100, "variationId": 105}, {"productId": 84, "variationId": 86}]
     const rest = this._getWooCommerceInstance(wooCommerceKeys);
     const response = [];
 
@@ -125,5 +124,111 @@ export class WooService {
     }
 
     return response;
+  }
+
+  async getShippingZones(wooCommerceKeys: WooCommerceKeysTypes) {
+    const rest = this._getWooCommerceInstance(wooCommerceKeys);
+
+    const { data } = await rest.get('shipping/zones');
+
+    return data
+      .filter((zone: any) => zone.id !== 0)
+      .map((zone: any) => ({ id: zone.id, name: zone.name }));
+  }
+
+  async getShippingZoneDetails(
+    wooCommerceKeys: WooCommerceKeysTypes,
+    zoneId: string,
+  ) {
+    const rest = this._getWooCommerceInstance(wooCommerceKeys);
+    const { data } = await rest.get(`shipping/zones/${zoneId}/methods`);
+
+    return data.map((i: any) => ({
+      title: i.title,
+      price: i.settings.cost.value,
+      methodId: i.method_id,
+    }));
+  }
+
+  async saveOrder(
+    wooCommerceKeys: WooCommerceKeysTypes,
+    checkoutData: any,
+    cartData: any,
+  ) {
+    const methods = await this.getShippingZoneDetails(
+      wooCommerceKeys,
+      checkoutData.billingAddress.country,
+    );
+    const method = methods.find(
+      (met: any) => met.title === checkoutData.shipping.title,
+    );
+    //   billingAddress: {
+    //       firstName: '',
+    //       lastName: '',
+    //       country: 0,
+    //       city: '',
+    //       postCode: '',
+    //       address: '',
+    //       email: '',
+    //       phone: '',
+    //     },
+    //     shippingAddress: {
+    //       firstName: '',
+    //       lastName: '',
+    //       country: 0,
+    //       city: '',
+    //       postCode: '',
+    //       address: '',
+    //     },
+    //     shipping: {
+    //       title: '',
+    //       price: 0,
+    //     },
+    //     payment: {},
+    const data = {
+      set_paid: true,
+      billing: {
+        first_name: checkoutData.billingAddress.firstName,
+        last_name: checkoutData.billingAddress.lastName,
+        address_1: checkoutData.billingAddress.address,
+        city: checkoutData.billingAddress.city,
+        postCode: checkoutData.billingAddress.postCode,
+        country: 'RO',
+        email: checkoutData.billingAddress.email,
+        phone: checkoutData.billingAddress.phone,
+      },
+      shipping: {
+        first_name: checkoutData.shippingAddress.firstName,
+        last_name: checkoutData.shippingAddress.lastName,
+        country: 'RO',
+        city: checkoutData.shippingAddress.city,
+        postCode: checkoutData.shippingAddress.postCode,
+        address_1: checkoutData.shippingAddress.address,
+      },
+      shipping_lines: [
+        {
+          method_id: method.methodId,
+          method_title: method.title,
+          total: method.price,
+        },
+      ],
+      line_items: cartData.map((item) => {
+        if (item.variationId) {
+          return {
+            product_id: item.id,
+            variation_id: item.variationId,
+            quantity: item.quantity,
+          };
+        }
+
+        return {
+          product_id: item.id,
+          quantity: item.quantity,
+        };
+      }),
+    };
+
+    const rest = this._getWooCommerceInstance(wooCommerceKeys);
+    await rest.post('orders', data);
   }
 }

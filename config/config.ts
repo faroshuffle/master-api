@@ -8,4 +8,6 @@ export default () => ({
   woo_commerce_private_key: process.env.WOO_COMMERCE_PRIVATE_KEY,
   localhost_src_replacement: process.env.LOCALHOST_SRC_REPLACEMENT,
   jwt_secret: process.env.JWT_SECRET,
+  stripe_public_key: process.env.STRIPE_PUBLIC_KEY,
+  stripe_private_key: process.env.STRIPE_PRIVATE_KEY,
 });
