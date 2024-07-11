@@ -27,5 +27,17 @@ export class MerchantsService {
         merchant: { connect: { id: merchantId } },
       },
     });
+
+    await this.prismaService.recommendationsSettings.create({
+      data: {
+        view: 10,
+        favorite: 20,
+        cart: 30,
+        order: 50,
+        show_after_order: true,
+        view_timeout: 5000,
+        merchant: { connect: { id: merchantId } },
+      },
+    });
   }
 }

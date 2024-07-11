@@ -1,4 +1,11 @@
-import { Body, Controller, HttpException, Logger, Post } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  HttpException,
+  Logger,
+  Post,
+  Headers,
+} from '@nestjs/common';
 import { Public } from 'constants/metadata.constants';
 import { AuthService } from './auth.service';
 import { CreateUserDto, LoginUserDto } from './auth.dto';
@@ -10,9 +17,12 @@ export class AuthUserController {
   constructor(private readonly authService: AuthService) {}
 
   @Post()
-  async create(@Body() body: CreateUserDto) {
+  async create(
+    @Headers('merchantid') merchantId: number,
+    @Body() body: CreateUserDto,
+  ) {
     try {
-      const response = await this.authService.createUser(body);
+      const response = await this.authService.createUser(merchantId, body);
 
       return { success: true, accessToken: response.access_token };
     } catch (e) {
@@ -22,9 +32,12 @@ export class AuthUserController {
   }
 
   @Post('login')
-  async login(@Body() body: LoginUserDto) {
+  async login(
+    @Headers('merchantid') merchantId: number,
+    @Body() body: LoginUserDto,
+  ) {
     try {
-      const response = await this.authService.loginUser(body);
+      const response = await this.authService.loginUser(merchantId, body);
 
       return { success: true, accessToken: response.access_token };
     } catch (e) {

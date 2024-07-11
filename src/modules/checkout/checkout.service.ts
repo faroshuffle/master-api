@@ -2,12 +2,15 @@ import { Injectable } from '@nestjs/common';
 import { WooService } from '../../services/woo.service';
 import { WooCommerceKeysTypes } from '../../../constants/WooCommerceKeys.types';
 import { StripeService } from '../../services/stripe.service';
+import { EventsService } from '../events/events.service';
+import { UserActionType } from '@prisma/client';
 
 @Injectable()
 export class CheckoutService {
   constructor(
     private readonly wooService: WooService,
     private readonly stripeService: StripeService,
+    private readonly eventsService: EventsService,
   ) {}
 
   async getShippingZones(wooCommerceKeys: WooCommerceKeysTypes) {
@@ -22,8 +25,19 @@ export class CheckoutService {
     wooCommerceKeys: WooCommerceKeysTypes,
     checkoutData: any,
     cartData: any,
+    merchantId: number,
+    userId: number,
   ) {
-    return this.wooService.saveOrder(wooCommerceKeys, checkoutData, cartData);
+    await this.wooService.saveOrder(wooCommerceKeys, checkoutData, cartData);
+
+    for (const product of cartData) {
+      await this.eventsService.trackEvent(
+        merchantId,
+        userId,
+        UserActionType.ORDER,
+        product.id,
+      );
+    }
   }
 
   async getPaymentIntent(price: number) {

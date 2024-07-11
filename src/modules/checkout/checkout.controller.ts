@@ -76,6 +76,8 @@ export class CheckoutController {
   @Post('save_order')
   @Public()
   async saveOrder(
+    @Headers('merchantid') merchantId: number,
+    @Headers('userid') userId: number,
     @Headers('woocommercekeys') wooCommerceKeys: WooCommerceKeysTypes,
     @Body() body: any,
   ) {
@@ -84,6 +86,8 @@ export class CheckoutController {
         wooCommerceKeys,
         body.checkoutData,
         body.cartData,
+        merchantId,
+        userId,
       );
 
       return { success: true };

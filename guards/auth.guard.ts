@@ -41,7 +41,7 @@ export class AuthGuard implements CanActivate {
             secret: this.configService.get('jwt_secret'),
           });
 
-          request.headers.userid = payload.id;
+          request.headers.userid = parseInt(payload.id);
         }
       }
 
@@ -67,7 +67,7 @@ export class AuthGuard implements CanActivate {
           secret: this.configService.get('jwt_secret'),
         });
 
-        request.headers.userid = payload.id;
+        request.headers.userid = parseInt(payload.id);
       }
     } catch {
       throw new UnauthorizedException();

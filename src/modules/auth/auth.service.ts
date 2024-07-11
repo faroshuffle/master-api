@@ -43,12 +43,16 @@ export class AuthService {
         merchantId: user.id,
       },
     });
-    await this.cacheService.storeCache(user.id.toString(), {
-      privateKey: keys.privateKey,
-      publicKey: keys.publicKey,
-    });
+
+    if (keys) {
+      await this.cacheService.storeCache(user.id.toString(), {
+        privateKey: keys.privateKey,
+        publicKey: keys.publicKey,
+      });
+    }
 
     return {
+      hasKeys: !!keys,
       access_token: await this.jwtService.signAsync(
         {
           id: user.id,
@@ -94,11 +98,11 @@ export class AuthService {
     });
   }
 
-  async createUser(body: CreateUserDto) {
+  async createUser(merchantId: number, body: CreateUserDto) {
     const password = await hash(body.password, 8);
 
     const user = await this.prismaService.users.create({
-      data: { ...body, password },
+      data: { ...body, password, merchant: { connect: { id: merchantId } } },
       select: {
         id: true,
         firstName: true,
@@ -118,9 +122,9 @@ export class AuthService {
     };
   }
 
-  async loginUser(body: LoginUserDto) {
+  async loginUser(merchantId: number, body: LoginUserDto) {
     const user = await this.prismaService.users.findFirst({
-      where: { email: body.email },
+      where: { merchantId, email: body.email },
     });
 
     if (!user) {

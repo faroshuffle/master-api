@@ -62,6 +62,36 @@ export class WooService {
     }
   }
 
+  async getProductsByIds(
+    productIds: number[],
+    wooCommerceKeys: WooCommerceKeysTypes,
+  ) {
+    const rest = this._getWooCommerceInstance(wooCommerceKeys);
+
+    const { data } = await rest.get('products', {
+      stock_status: 'instock',
+      status: 'publish',
+      include: productIds,
+    });
+
+    return {
+      products: data.map((product) => ({
+        id: product.id,
+        name: product.name,
+        price: product.price,
+        on_sale: product.on_sale,
+        images: product.images
+          .slice(0, 2)
+          .map((image) =>
+            image.src.replace(
+              'http://localhost',
+              this.configService.get('localhost_src_replacement'),
+            ),
+          ),
+      })),
+    };
+  }
+
   async getPublicProductById(
     id: string,
     wooCommerceKeys: WooCommerceKeysTypes,
@@ -162,29 +192,6 @@ export class WooService {
     const method = methods.find(
       (met: any) => met.title === checkoutData.shipping.title,
     );
-    //   billingAddress: {
-    //       firstName: '',
-    //       lastName: '',
-    //       country: 0,
-    //       city: '',
-    //       postCode: '',
-    //       address: '',
-    //       email: '',
-    //       phone: '',
-    //     },
-    //     shippingAddress: {
-    //       firstName: '',
-    //       lastName: '',
-    //       country: 0,
-    //       city: '',
-    //       postCode: '',
-    //       address: '',
-    //     },
-    //     shipping: {
-    //       title: '',
-    //       price: 0,
-    //     },
-    //     payment: {},
     const data = {
       set_paid: true,
       billing: {

@@ -28,7 +28,7 @@ export class AuthController {
           secure: true,
           httpOnly: true,
         })
-        .send({ success: true });
+        .send({ success: true, data: { hasKeys: response.hasKeys } });
     } catch (e) {
       this.logger.error(e);
       throw new HttpException(e.message, e.status);

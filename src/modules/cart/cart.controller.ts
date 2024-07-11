@@ -20,10 +20,17 @@ export class CartController {
   @Post()
   async addProduct(
     @Headers('woocommercekeys') wooCommerceKeys: WooCommerceKeysTypes,
+    @Headers('merchantid') merchantId: number,
+    @Headers('userid') userId: number,
     @Body() body: AddProductDto,
   ) {
     try {
-      const response = await this.cartService.addProduct(wooCommerceKeys, body);
+      const response = await this.cartService.addProduct(
+        wooCommerceKeys,
+        body,
+        merchantId,
+        userId,
+      );
 
       return { success: true, data: response };
     } catch (e) {

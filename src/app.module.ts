@@ -17,6 +17,8 @@ import { CacheService } from './services/cache.service';
 import { CartModule } from './modules/cart/cart.module';
 import { CheckoutModule } from './modules/checkout/checkout.module';
 import { StripeService } from './services/stripe.service';
+import { EventsModule } from './modules/events/events.module';
+import { RecommendationsModule } from './modules/recommendations/recommendations.module';
 
 @Module({
   imports: [
@@ -33,6 +35,8 @@ import { StripeService } from './services/stripe.service';
     MerchantsModule,
     CartModule,
     CheckoutModule,
+    EventsModule,
+    RecommendationsModule,
   ],
   providers: [
     {

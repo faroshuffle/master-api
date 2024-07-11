@@ -14,24 +14,30 @@ datasource db {
 }
 
 model Merchants {
-  id              Int               @id @default(autoincrement())
-  username        String            @unique
-  password        String
-  firstName       String            @map("first_name")
-  lastName        String            @map("last_name")
-  email           String
-  Screens         Screens[]
-  WooCommerceKeys WooCommerceKeys[]
+  id                      Int                      @id @default(autoincrement())
+  username                String                   @unique
+  password                String
+  firstName               String                   @map("first_name")
+  lastName                String                   @map("last_name")
+  email                   String
+  screens                 Screens[]
+  wooCommerceKeys         WooCommerceKeys[]
+  users                   Users[]
+  userActions             UserActions[]
+  recommendationsSettings RecommendationsSettings?
 
   @@map("merchants")
 }
 
 model Users {
-  id        Int    @id @default(autoincrement())
-  password  String
-  firstName String @map("first_name")
-  lastName  String @map("last_name")
-  email     String @unique
+  id          Int           @id @default(autoincrement())
+  password    String
+  firstName   String        @map("first_name")
+  lastName    String        @map("last_name")
+  email       String        @unique
+  merchant    Merchants     @relation(fields: [merchantId], references: [id])
+  merchantId  Int           @map("merchant_id")
+  UserActions UserActions[]
 
   @@map("users")
 }
@@ -39,11 +45,11 @@ model Users {
 model WooCommerceKeys {
   id         Int       @id @default(autoincrement())
   merchant   Merchants @relation(fields: [merchantId], references: [id])
-  merchantId Int
+  merchantId Int       @map("merchant_id")
   publicKey  String    @map("public_key")
   privateKey String    @map("private_key")
 
-  @@map("wooCommerceKeys")
+  @@map("woo_commerce_keys")
 }
 
 model Screens {
@@ -53,7 +59,7 @@ model Screens {
   presets    Presets[] @relation("PartOfScreen")
   targets    Presets[] @relation("PresetGoesToScreen")
   merchant   Merchants @relation(fields: [merchantId], references: [id])
-  merchantId Int
+  merchantId Int       @map("merchant_id")
 
   @@map("screens")
 }
@@ -72,4 +78,38 @@ model Presets {
   targetId Int?     @map("target_id")
 
   @@map("presets")
+}
+
+enum UserActionType {
+  VIEW
+  FAVORITE
+  ADD_TO_CART
+  ORDER
+}
+
+model UserActions {
+  id         Int            @id @default(autoincrement())
+  action     UserActionType
+  productId  Int            @map("product_id")
+  user       Users          @relation(fields: [userId], references: [id])
+  userId     Int            @map("user_id")
+  createdAt  DateTime       @default(now()) @map("created_at")
+  merchant   Merchants      @relation(fields: [merchantId], references: [id])
+  merchantId Int            @map("merchant_id")
+
+  @@map("user_actions")
+}
+
+model RecommendationsSettings {
+  id               Int       @id @default(autoincrement())
+  view             Int
+  favorite         Int
+  cart             Int
+  order            Int
+  view_timeout     Int
+  show_after_order Boolean
+  merchant         Merchants @relation(fields: [merchantId], references: [id])
+  merchantId       Int       @unique @map("merchant_id")
+
+  @@map("recommendations_settings")
 }
