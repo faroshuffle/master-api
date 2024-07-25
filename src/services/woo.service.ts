@@ -55,7 +55,7 @@ export class WooService {
             ),
         })),
         totalCount: headers['x-wp-total'],
-        totalPages: headers['X-WP-TotalPages'],
+        totalPages: Math.ceil(Number(headers['x-wp-total']) / 10),
       };
     } catch (e) {
       console.log(e);
@@ -120,10 +120,11 @@ export class WooService {
     wooCommerceKeys: WooCommerceKeysTypes,
     body: AddProductDto,
   ) {
+    console.log(body);
     const rest = this._getWooCommerceInstance(wooCommerceKeys);
-    const { data } = await rest.get(`products/${body.productId}/variations`, {
-      search: body.attributes.join(','),
-    });
+    const { data } = await rest.get(`products/${body.productId}/variations`);
+
+    console.log(data);
 
     return data[0].id;
   }
@@ -152,7 +153,7 @@ export class WooService {
         ),
       });
     }
-
+    console.log(response);
     return response;
   }
 
@@ -237,5 +238,32 @@ export class WooService {
 
     const rest = this._getWooCommerceInstance(wooCommerceKeys);
     await rest.post('orders', data);
+  }
+
+  async getAllCategories(wooCommerceKeys: WooCommerceKeysTypes) {
+    const rest = this._getWooCommerceInstance(wooCommerceKeys);
+    const categories = [];
+
+    let page = 1;
+    let { data } = await rest.get('products/categories', {
+      page,
+      per_page: 20,
+      hide_empty: true,
+    });
+
+    do {
+      categories.push(
+        ...data.map((item: any) => ({ id: item.id, name: item.name })),
+      );
+      page++;
+      const resp = await rest.get('products/categories', {
+        page,
+        per_page: 20,
+        hide_empty: true,
+      });
+      data = resp.data;
+    } while (data.length);
+
+    return categories;
   }
 }

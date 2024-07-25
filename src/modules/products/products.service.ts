@@ -17,7 +17,7 @@ export class ProductsService {
     params: GetProductsParamsDto,
     wooCommerceKeys: WooCommerceKeysTypes,
   ) {
-    await this.getRecommendedProducts(1, 1, wooCommerceKeys);
+    // await this.getRecommendedProducts(1, 1, wooCommerceKeys);
     return this.wooService.getPublicProducts(params, wooCommerceKeys);
   }
 
@@ -27,12 +27,19 @@ export class ProductsService {
       Number(id),
       wooCommerceKeys,
     );
-    const product = await this.wooService.getPublicProductById(id, wooCommerceKeys);
+    const product = await this.wooService.getPublicProductById(
+      id,
+      wooCommerceKeys,
+    );
 
     return {
       similar,
       product,
     };
+  }
+
+  async getAllCategories(wooCommerceKeys: WooCommerceKeysTypes) {
+    return this.wooService.getAllCategories(wooCommerceKeys);
   }
 
   async getRecommendedProducts(
@@ -52,7 +59,7 @@ export class ProductsService {
       wooCommerceKeys,
     );
 
-    console.log(products);
+    // console.log(products);
   }
 
   async getSimilarProducts(
@@ -67,9 +74,6 @@ export class ProductsService {
       },
     });
 
-    return this.wooService.getProductsByIds(
-      productIds,
-      wooCommerceKeys,
-    );
+    return this.wooService.getProductsByIds(productIds, wooCommerceKeys);
   }
 }

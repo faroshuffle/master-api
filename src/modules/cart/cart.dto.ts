@@ -1,13 +1,25 @@
 import { IsArray, IsNumber, IsString, ValidateNested } from 'class-validator';
 import { Type } from 'class-transformer';
 
+class Attribute {
+  @IsNumber()
+  id: number;
+
+  @IsString()
+  name: string;
+
+  @IsString()
+  option: string;
+}
+
 export class AddProductDto {
   @IsNumber()
   productId: number;
 
   @IsArray()
-  @IsString({ each: true })
-  attributes: string[];
+  @ValidateNested()
+  @Type(() => Attribute)
+  attributes: Attribute[];
 }
 
 class CartProductDto {

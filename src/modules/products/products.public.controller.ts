@@ -36,6 +36,20 @@ export class ProductsPublicController {
     }
   }
 
+  @Get('categories')
+  async getAllCategories(
+    @Headers('woocommercekeys') wooCommerceKeys: WooCommerceKeysTypes,
+  ) {
+    try {
+      const data = await this.productsService.getAllCategories(wooCommerceKeys);
+
+      return { success: true, data };
+    } catch (e) {
+      this.logger.error(e);
+      throw new HttpException(e.message, e.status);
+    }
+  }
+
   @Get(':id')
   async getProductById(
     @Param('id') id: string,
