@@ -1,7 +1,10 @@
 import { Injectable } from '@nestjs/common';
 import WooCommerceRestApi from '@woocommerce/woocommerce-rest-api';
 import { ConfigService } from '@nestjs/config';
-import { GetProductsParamsDto } from '../modules/products/products.dto';
+import {
+  GetPrivateProductsParamsDto,
+  GetProductsParamsDto,
+} from '../modules/products/products.dto';
 import { WooCommerceKeysTypes } from '../../constants/WooCommerceKeys.types';
 import { AddProductDto, GetProductsDto } from '../modules/cart/cart.dto';
 
@@ -14,7 +17,7 @@ export class WooService {
   _getWooCommerceInstance(wooCommerceKeys: WooCommerceKeysTypes) {
     if (!this.wooCommerce) {
       this.wooCommerce = new WooCommerceRestApi({
-        url: 'http://localhost/',
+        url: 'http://localhost:8888',
         consumerSecret: wooCommerceKeys.privateKey,
         consumerKey: wooCommerceKeys.publicKey,
         version: 'wc/v3',
@@ -22,6 +25,36 @@ export class WooService {
     }
 
     return this.wooCommerce;
+  }
+
+  async getPrivateProducts(
+    wooCommerceKeys: WooCommerceKeysTypes,
+    { currentPage = '1', search }: GetPrivateProductsParamsDto,
+  ) {
+    const rest = this._getWooCommerceInstance(wooCommerceKeys);
+
+    const { data, headers } = await rest.get('products', {
+      per_page: 10,
+      page: parseInt(currentPage),
+      search,
+    });
+
+    return {
+      products: data.map((product) => ({
+        id: product.id,
+        name: product.name,
+        price: product.price,
+        on_sale: product.on_sale,
+        total_count: headers['wp-total-count'],
+        image: product.images[0].src,
+        stock_status: product.stock_status,
+        categories: product.categories.map((cat) => cat.name),
+        date_created: product.date_created,
+        status: product.status,
+      })),
+      totalCount: headers['x-wp-total'],
+      totalPages: Math.ceil(Number(headers['x-wp-total']) / 10),
+    };
   }
 
   async getPublicProducts(
@@ -49,7 +82,7 @@ export class WooService {
             .slice(0, 2)
             .map((image) =>
               image.src.replace(
-                'http://localhost',
+                'http://localhost:8888',
                 this.configService.get('localhost_src_replacement'),
               ),
             ),
@@ -84,7 +117,7 @@ export class WooService {
           .slice(0, 2)
           .map((image) =>
             image.src.replace(
-              'http://localhost',
+              'http://localhost:8888',
               this.configService.get('localhost_src_replacement'),
             ),
           ),
@@ -107,7 +140,7 @@ export class WooService {
       on_sale: data.on_sale,
       images: data.images.map((image) =>
         image.src.replace(
-          'http://localhost',
+          'http://localhost:8888',
           this.configService.get('localhost_src_replacement'),
         ),
       ),
@@ -120,11 +153,8 @@ export class WooService {
     wooCommerceKeys: WooCommerceKeysTypes,
     body: AddProductDto,
   ) {
-    console.log(body);
     const rest = this._getWooCommerceInstance(wooCommerceKeys);
     const { data } = await rest.get(`products/${body.productId}/variations`);
-
-    console.log(data);
 
     return data[0].id;
   }
@@ -148,12 +178,12 @@ export class WooService {
         price: data.price,
         on_sale: data.on_sale,
         image: data.image.src.replace(
-          'http://localhost',
+          'http://localhost:8888',
           this.configService.get('localhost_src_replacement'),
         ),
       });
     }
-    console.log(response);
+
     return response;
   }
 
@@ -176,7 +206,7 @@ export class WooService {
 
     return data.map((i: any) => ({
       title: i.title,
-      price: i.settings.cost.value,
+      price: i.settings.cost?.value || '0',
       methodId: i.method_id,
     }));
   }
@@ -184,7 +214,8 @@ export class WooService {
   async saveOrder(
     wooCommerceKeys: WooCommerceKeysTypes,
     checkoutData: any,
-    cartData: any,
+    products: any,
+    shipping: any,
   ) {
     const methods = await this.getShippingZoneDetails(
       wooCommerceKeys,
@@ -193,7 +224,7 @@ export class WooService {
     const method = methods.find(
       (met: any) => met.title === checkoutData.shipping.title,
     );
-    const data = {
+    const payload = {
       set_paid: true,
       billing: {
         first_name: checkoutData.billingAddress.firstName,
@@ -205,14 +236,7 @@ export class WooService {
         email: checkoutData.billingAddress.email,
         phone: checkoutData.billingAddress.phone,
       },
-      shipping: {
-        first_name: checkoutData.shippingAddress.firstName,
-        last_name: checkoutData.shippingAddress.lastName,
-        country: 'RO',
-        city: checkoutData.shippingAddress.city,
-        postCode: checkoutData.shippingAddress.postCode,
-        address_1: checkoutData.shippingAddress.address,
-      },
+      shipping,
       shipping_lines: [
         {
           method_id: method.methodId,
@@ -220,24 +244,13 @@ export class WooService {
           total: method.price,
         },
       ],
-      line_items: cartData.map((item) => {
-        if (item.variationId) {
-          return {
-            product_id: item.id,
-            variation_id: item.variationId,
-            quantity: item.quantity,
-          };
-        }
-
-        return {
-          product_id: item.id,
-          quantity: item.quantity,
-        };
-      }),
+      line_items: products,
     };
 
     const rest = this._getWooCommerceInstance(wooCommerceKeys);
-    await rest.post('orders', data);
+    const { data } = await rest.post('orders', payload);
+
+    return data.id;
   }
 
   async getAllCategories(wooCommerceKeys: WooCommerceKeysTypes) {
@@ -265,5 +278,24 @@ export class WooService {
     } while (data.length);
 
     return categories;
+  }
+
+  async getOrderProducts(
+    wooCommerceKeys: WooCommerceKeysTypes,
+    productIds: number[],
+  ) {
+    const rest = this._getWooCommerceInstance(wooCommerceKeys);
+
+    return await Promise.all(
+      productIds.map(async (productId) => {
+        const { data: product } = await rest.get(`products/${productId}`);
+        return {
+          id: product.id,
+          name: product.name,
+          price: product.price,
+          image: product.images[0].src,
+        };
+      }),
+    );
   }
 }

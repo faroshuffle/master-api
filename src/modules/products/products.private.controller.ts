@@ -1,0 +1,37 @@
+import {
+  Controller,
+  Get,
+  Headers,
+  HttpException,
+  Logger,
+  Query,
+} from '@nestjs/common';
+import { ProductsService } from './products.service';
+import { WooCommerceKeysTypes } from '../../../constants/WooCommerceKeys.types';
+import { GetPrivateProductsParamsDto } from './products.dto';
+
+@Controller('private/products')
+export class ProductsPrivateController {
+  logger = new Logger(ProductsPrivateController.name);
+
+  constructor(private readonly productsService: ProductsService) {}
+
+  @Get()
+  async getProducts(
+    @Headers('woocommercekeys') wooCommerceKeys: WooCommerceKeysTypes,
+    @Query() params: GetPrivateProductsParamsDto,
+  ) {
+    try {
+      const data = await this.productsService.getPrivateProducts(
+        wooCommerceKeys,
+        params,
+      );
+
+      return { success: true, data };
+    } catch (e) {
+      console.log(e);
+      this.logger.error(e);
+      throw new HttpException(e.message, e.status);
+    }
+  }
+}

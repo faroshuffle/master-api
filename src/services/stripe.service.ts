@@ -10,7 +10,7 @@ export class StripeService {
     this.stripe = new Stripe(configService.get('stripe_private_key'));
   }
 
-  async createPaymentIntent(price) {
+  async createPaymentIntent(price: number) {
     const intent = await this.stripe.paymentIntents.create({
       amount: Math.round((price + Number.EPSILON) * 100),
       currency: 'RON',

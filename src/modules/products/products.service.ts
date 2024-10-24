@@ -1,6 +1,9 @@
 import { Injectable } from '@nestjs/common';
 import { WooService } from '../../services/woo.service';
-import { GetProductsParamsDto } from './products.dto';
+import {
+  GetPrivateProductsParamsDto,
+  GetProductsParamsDto,
+} from './products.dto';
 import { WooCommerceKeysTypes } from '../../../constants/WooCommerceKeys.types';
 import { ConfigService } from '@nestjs/config';
 import { RestClientService } from '../../services/restClient.service';
@@ -12,6 +15,13 @@ export class ProductsService {
     private readonly configService: ConfigService,
     private readonly restClient: RestClientService,
   ) {}
+
+  async getPrivateProducts(
+    wooCommerceKeys: WooCommerceKeysTypes,
+    params: GetPrivateProductsParamsDto,
+  ) {
+    return this.wooService.getPrivateProducts(wooCommerceKeys, params);
+  }
 
   async getProducts(
     params: GetProductsParamsDto,

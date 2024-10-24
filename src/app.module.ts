@@ -19,6 +19,8 @@ import { CheckoutModule } from './modules/checkout/checkout.module';
 import { StripeService } from './services/stripe.service';
 import { EventsModule } from './modules/events/events.module';
 import { RecommendationsModule } from './modules/recommendations/recommendations.module';
+import { UsersModule } from './modules/users/users.module';
+import { OrdersModule } from './modules/orders/orders.module';
 
 @Module({
   imports: [
@@ -37,6 +39,8 @@ import { RecommendationsModule } from './modules/recommendations/recommendations
     CheckoutModule,
     EventsModule,
     RecommendationsModule,
+    UsersModule,
+    OrdersModule,
   ],
   providers: [
     {
