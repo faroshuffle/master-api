@@ -21,12 +21,16 @@ export class ProductsPublicController {
   @Get('')
   async getProducts(
     @Query() params: GetProductsParamsDto,
+    @Headers('merchantid') merchantId: number,
+    @Headers('userid') userId: number,
     @Headers('woocommercekeys') wooCommerceKeys: WooCommerceKeysTypes,
   ) {
     try {
       const data = await this.productsService.getProducts(
         params,
         wooCommerceKeys,
+        merchantId,
+        userId,
       );
 
       return { success: true, data };

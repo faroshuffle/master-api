@@ -26,9 +26,20 @@ export class ProductsService {
   async getProducts(
     params: GetProductsParamsDto,
     wooCommerceKeys: WooCommerceKeysTypes,
+    merchantId: number,
+    userId: number,
   ) {
-    // await this.getRecommendedProducts(1, 1, wooCommerceKeys);
-    return this.wooService.getPublicProducts(params, wooCommerceKeys);
+    const { products: recommendations } = await this.getRecommendedProducts(
+      merchantId,
+      userId,
+      wooCommerceKeys,
+    );
+    const { products } = await this.wooService.getPublicProducts(
+      params,
+      wooCommerceKeys,
+    );
+
+    return { recommendations, products };
   }
 
   async getProductById(id: string, wooCommerceKeys: WooCommerceKeysTypes) {
@@ -64,12 +75,7 @@ export class ProductsService {
       },
     });
 
-    const products = await this.wooService.getProductsByIds(
-      productIds,
-      wooCommerceKeys,
-    );
-
-    // console.log(products);
+    return this.wooService.getProductsByIds(productIds, wooCommerceKeys);
   }
 
   async getSimilarProducts(
