@@ -11,4 +11,5 @@ export default () => ({
   stripe_public_key: process.env.STRIPE_PUBLIC_KEY,
   stripe_private_key: process.env.STRIPE_PRIVATE_KEY,
   recommendationServiceUrl: process.env.RECOMMENDATION_SERVICE_URL,
+  mobileAppDirectory: process.env.MOBILE_APP_DIRECTORY,
 });

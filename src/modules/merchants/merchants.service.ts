@@ -1,5 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { PrismaService } from '../../services/prisma.service';
+import * as fs from 'fs';
 
 @Injectable()
 export class MerchantsService {
@@ -39,5 +40,17 @@ export class MerchantsService {
         merchant: { connect: { id: merchantId } },
       },
     });
+
+    await this.prismaService.buildSettings.create({
+      data: {
+        appName: '',
+        packageName: '',
+        splashImage: '',
+        adaptiveImage: '',
+        merchant: { connect: { id: merchantId } },
+      },
+    });
+
+    fs.mkdirSync(`${process.cwd()}/builds/${merchantId}`, { recursive: true });
   }
 }

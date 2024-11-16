@@ -26,6 +26,7 @@ model Merchants {
   userActions             UserActions[]
   recommendationsSettings RecommendationsSettings?
   Orders                  Orders[]
+  BuildSettings           BuildSettings[]
 
   @@map("merchants")
 }
@@ -158,4 +159,16 @@ model Orders {
   createdAt       DateTime          @default(now()) @map("created_at")
 
   @@map("orders")
+}
+
+model BuildSettings {
+  id            Int       @id @default(autoincrement())
+  appName       String?   @map("app_name")
+  packageName   String?   @map("package_name")
+  splashImage   String?   @map("splash_image")
+  adaptiveImage String?   @map("adaptive_image")
+  merchant      Merchants @relation(fields: [merchantId], references: [id])
+  merchantId    Int       @unique @map("merchant_id")
+
+  @@map("build_settings")
 }

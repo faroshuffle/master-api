@@ -21,6 +21,8 @@ import { EventsModule } from './modules/events/events.module';
 import { RecommendationsModule } from './modules/recommendations/recommendations.module';
 import { UsersModule } from './modules/users/users.module';
 import { OrdersModule } from './modules/orders/orders.module';
+import { BuildsModule } from './modules/builds/builds.module';
+import { SocketsService } from './services/sockets.service';
 
 @Module({
   imports: [
@@ -41,6 +43,7 @@ import { OrdersModule } from './modules/orders/orders.module';
     RecommendationsModule,
     UsersModule,
     OrdersModule,
+    BuildsModule,
   ],
   providers: [
     {
@@ -52,6 +55,7 @@ import { OrdersModule } from './modules/orders/orders.module';
     WooService,
     CacheService,
     StripeService,
+    SocketsService,
   ],
 })
 export class AppModule {}
