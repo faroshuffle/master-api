@@ -16,6 +16,19 @@ export class OrdersController {
   private readonly logger = new Logger(OrdersController.name);
   constructor(private readonly ordersService: OrdersService) {}
 
+  @Get('filters')
+  async getFilters(@Headers('merchantid') merchantId: number) {
+    try {
+      const [userFilters, cityFilters] =
+        await this.ordersService.getFilters(merchantId);
+
+      return { success: true, userFilters, cityFilters };
+    } catch (e) {
+      this.logger.error(e);
+      throw new HttpException(e.message, e.status);
+    }
+  }
+
   @Get()
   async getOrders(
     @Headers('merchantid') merchantId: number,

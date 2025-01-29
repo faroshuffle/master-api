@@ -4,8 +4,10 @@ import {
   Headers,
   HttpException,
   Logger,
+  Query,
 } from '@nestjs/common';
 import { UsersService } from './users.service';
+import { GetPrivateProductsParamsDto } from '../products/products.dto';
 
 @Controller('users')
 export class UsersController {
@@ -13,10 +15,16 @@ export class UsersController {
   constructor(private readonly usersService: UsersService) {}
 
   @Get()
-  async getUsers(@Headers('merchantid') merchantId: number) {
+  async getUsers(
+    @Headers('merchantid') merchantId: number,
+    @Query() params: GetPrivateProductsParamsDto,
+  ) {
     try {
-      const response = await this.usersService.getUsers(merchantId);
-      return { success: true, users: response };
+      const [users, totalCount] = await this.usersService.getUsers(
+        merchantId,
+        params,
+      );
+      return { success: true, users, totalPages: Math.ceil(totalCount / 10) };
     } catch (e) {
       this.logger.error(e);
       throw new HttpException(e.message, e.status);

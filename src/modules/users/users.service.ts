@@ -6,19 +6,40 @@ import {
   CreateAddressDto,
 } from './users.dto';
 import { compare, hash } from 'bcrypt';
+import { GetPrivateProductsParamsDto } from '../products/products.dto';
 
 @Injectable()
 export class UsersService {
   constructor(private readonly prismaService: PrismaService) {}
 
-  async getUsers(merchantId: number) {
-    const users = await this.prismaService.users.findMany({
-      where: {
-        merchant: { id: merchantId },
-      },
-    });
+  async getUsers(merchantId: number, params: GetPrivateProductsParamsDto) {
+    const currentPage = Number(params.currentPage) - 1;
 
-    console.log(users);
+    return Promise.all([
+      this.prismaService.users.findMany({
+        where: {
+          merchant: { id: merchantId },
+        },
+        take: 10,
+        skip: 10 * currentPage,
+        select: {
+          firstName: true,
+          lastName: true,
+          email: true,
+          phone: true,
+          _count: {
+            select: {
+              Orders: true,
+            },
+          },
+        },
+      }),
+      this.prismaService.users.count({
+        where: {
+          merchant: { id: merchantId },
+        },
+      }),
+    ]);
   }
 
   async getPublicUser(merchantId: number, userId: number) {

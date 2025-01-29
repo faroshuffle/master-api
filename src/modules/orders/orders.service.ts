@@ -11,13 +11,73 @@ export class OrdersService {
     private readonly wooService: WooService,
   ) {}
 
+  async getFilters(merchantId: number) {
+    const users = await this.prismaService.orders.groupBy({
+      by: ['userId'],
+      where: {
+        merchant: { id: merchantId },
+      },
+    });
+
+    const cities = await this.prismaService.orders.groupBy({
+      by: ['addressId'],
+      where: {
+        merchant: { id: merchantId },
+      },
+    });
+
+    return Promise.all([
+      this.prismaService.users.findMany({
+        where: {
+          id: { in: users.map((i) => i.userId) },
+        },
+        select: {
+          id: true,
+          firstName: true,
+          lastName: true,
+        },
+      }),
+      this.prismaService.addresses.findMany({
+        where: {
+          id: { in: cities.map((i) => i.addressId) },
+        },
+        select: {
+          city: true,
+        },
+      }),
+    ]);
+  }
+
   async getOrders(merchantId: number, params: GetOrdersDto) {
     const currentPage = Number(params.currentPage) - 1;
+    const filters: any = { user: {}, createdAt: {}, addressId: {} };
+    if (params.user) {
+      filters.user.id = Number(params.user);
+    }
+    if (params.startDate) {
+      filters.createdAt.gte = new Date(params.startDate);
+    }
+    if (params.endDate) {
+      filters.createdAt.lte = new Date(params.endDate);
+    }
+    if (params.city) {
+      const ids = await this.prismaService.addresses.findMany({
+        where: {
+          city: params.city,
+        },
+        select: {
+          id: true,
+        },
+      });
+
+      filters.addressId.in = ids.map((id) => id.id);
+    }
 
     return Promise.all([
       this.prismaService.orders.findMany({
         where: {
           merchant: { id: merchantId },
+          ...filters,
         },
         include: {
           user: true,
