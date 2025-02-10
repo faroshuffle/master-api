@@ -29,17 +29,23 @@ export class ProductsService {
     merchantId: number,
     userId: number,
   ) {
-    const { products: recommendations } = await this.getRecommendedProducts(
-      merchantId,
-      userId,
-      wooCommerceKeys,
-    );
-    const { products } = await this.wooService.getPublicProducts(
+    let recommendations = [];
+    if (userId) {
+      const { products } = await this.getRecommendedProducts(
+        merchantId,
+        userId,
+        wooCommerceKeys,
+      );
+
+      recommendations = products;
+    }
+
+    const listData = await this.wooService.getPublicProducts(
       params,
       wooCommerceKeys,
     );
 
-    return { recommendations, products };
+    return { recommendations, listData };
   }
 
   async getProductById(id: string, wooCommerceKeys: WooCommerceKeysTypes) {

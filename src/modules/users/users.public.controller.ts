@@ -1,12 +1,15 @@
 import {
   Body,
   Controller,
+  Delete,
   Get,
   Headers,
   HttpException,
   Logger,
+  Param,
   Patch,
   Post,
+  Put,
 } from '@nestjs/common';
 import { UsersService } from './users.service';
 import {
@@ -15,12 +18,17 @@ import {
   CreateAddressDto,
 } from './users.dto';
 import { Public } from 'constants/metadata.constants';
+import { WooCommerceKeysTypes } from '../../../constants/WooCommerceKeys.types';
+import { OrdersService } from '../orders/orders.service';
 
 @Public()
 @Controller('/public/users')
 export class UsersPublicController {
   logger = new Logger(UsersPublicController.name);
-  constructor(private readonly usersService: UsersService) {}
+  constructor(
+    private readonly usersService: UsersService,
+    private readonly ordersService: OrdersService,
+  ) {}
 
   @Get()
   async getUser(
@@ -28,6 +36,9 @@ export class UsersPublicController {
     @Headers('userid') userId: number,
   ) {
     try {
+      if (!userId) {
+        return { success: true, user: null };
+      }
       const response = await this.usersService.getPublicUser(
         merchantId,
         userId,
@@ -78,6 +89,40 @@ export class UsersPublicController {
     }
   }
 
+  @Put('addresses/:id')
+  async updateActiveAddress(
+    @Headers('userid') userId: number,
+    @Param('id') addressId: string,
+  ) {
+    try {
+      const response = await this.usersService.updateActiveAddress(
+        userId,
+        Number(addressId),
+      );
+      return { success: true, addresses: response };
+    } catch (e) {
+      this.logger.error(e);
+      throw new HttpException(e.message, e.status);
+    }
+  }
+
+  @Delete('addresses/:id')
+  async deleteAddress(
+    @Headers('userid') userId: number,
+    @Param('id') addressId: string,
+  ) {
+    try {
+      const response = await this.usersService.deleteAddress(
+        userId,
+        Number(addressId),
+      );
+      return { success: true, addresses: response };
+    } catch (e) {
+      this.logger.error(e);
+      throw new HttpException(e.message, e.status);
+    }
+  }
+
   @Post('addresses')
   async createAddress(
     @Headers('userid') userId: number,
@@ -95,8 +140,26 @@ export class UsersPublicController {
   @Get('orders')
   async getOrders(@Headers('userid') userId: number) {
     try {
-      await this.usersService.getOrders(userId);
-      return { success: true };
+      const orders = await this.usersService.getOrders(userId);
+      return { success: true, orders };
+    } catch (e) {
+      this.logger.error(e);
+      throw new HttpException(e.message, e.status);
+    }
+  }
+
+  @Get('/orders/:orderId/products')
+  async getOrderProducts(
+    @Param('orderId') orderId: string,
+    @Headers('woocommercekeys') wooCommerceKeys: WooCommerceKeysTypes,
+  ) {
+    try {
+      const response = await this.ordersService.getOrderProducts(
+        Number(orderId),
+        wooCommerceKeys,
+      );
+
+      return { success: true, products: response };
     } catch (e) {
       this.logger.error(e);
       throw new HttpException(e.message, e.status);

@@ -34,6 +34,7 @@ export class CartController {
 
       return { success: true, data: response };
     } catch (e) {
+      console.log(e);
       this.logger.error(e);
       throw new HttpException(e.message, e.status);
     }

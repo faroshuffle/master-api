@@ -23,12 +23,14 @@ export class CartService {
       body,
     );
 
-    await this.eventsService.trackEvent(
-      merchantId,
-      userId,
-      UserActionType.ADD_TO_CART,
-      body.productId,
-    );
+    if (userId) {
+      await this.eventsService.trackEvent(
+        merchantId,
+        userId,
+        UserActionType.ADD_TO_CART,
+        body.productId,
+      );
+    }
 
     return variation;
   }

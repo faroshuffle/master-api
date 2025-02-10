@@ -77,7 +77,6 @@ export class WooService {
           name: product.name,
           price: product.price,
           on_sale: product.on_sale,
-          total_count: headers['wp-total-count'],
           images: product.images
             .slice(0, 2)
             .map((image) =>
@@ -293,7 +292,10 @@ export class WooService {
           id: product.id,
           name: product.name,
           price: product.price,
-          image: product.images[0].src,
+          image: product.images[0].src.replace(
+            'http://localhost:8888',
+            this.configService.get('localhost_src_replacement'),
+          ),
         };
       }),
     );

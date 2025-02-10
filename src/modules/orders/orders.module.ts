@@ -7,5 +7,6 @@ import { WooService } from '../../services/woo.service';
 @Module({
   providers: [OrdersService, PrismaService, WooService],
   controllers: [OrdersController],
+  exports: [OrdersService],
 })
 export class OrdersModule {}

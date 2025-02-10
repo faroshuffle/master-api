@@ -7,10 +7,14 @@ import {
 } from './users.dto';
 import { compare, hash } from 'bcrypt';
 import { GetPrivateProductsParamsDto } from '../products/products.dto';
+import { OrdersService } from '../orders/orders.service';
 
 @Injectable()
 export class UsersService {
-  constructor(private readonly prismaService: PrismaService) {}
+  constructor(
+    private readonly prismaService: PrismaService,
+    private readonly ordersService: OrdersService,
+  ) {}
 
   async getUsers(merchantId: number, params: GetPrivateProductsParamsDto) {
     const currentPage = Number(params.currentPage) - 1;
@@ -101,9 +105,89 @@ export class UsersService {
     });
   }
 
+  async updateActiveAddress(userId: number, addressId: number) {
+    const activeAddress = await this.prismaService.addresses.findMany({
+      where: {
+        user: {
+          id: userId,
+        },
+        isActive: true,
+      },
+      select: {
+        id: true,
+      },
+    });
+
+    await this.prismaService.addresses.update({
+      where: {
+        id: addressId,
+        user: {
+          id: userId,
+        },
+      },
+      data: {
+        isActive: true,
+      },
+    });
+
+    await this.prismaService.addresses.updateMany({
+      where: {
+        id: {
+          in: activeAddress
+            .map((add) => add.id)
+            .filter((addId) => addId !== addressId),
+        },
+        user: {
+          id: userId,
+        },
+      },
+      data: {
+        isActive: false,
+      },
+    });
+  }
+
+  async deleteAddress(userId: number, addressId: number) {
+    const activeAddress = await this.prismaService.addresses.findFirst({
+      where: {
+        user: {
+          id: userId,
+        },
+        isActive: true,
+      },
+    });
+
+    if (activeAddress.id === addressId) {
+      throw new Error('Cannot delete active address');
+    }
+
+    await this.prismaService.addresses.delete({
+      where: {
+        id: addressId,
+      },
+    });
+  }
+
   async createAddress(userId: number, data: CreateAddressDto) {
     const addresses = await this.getPublicAddresses(userId);
     const isFirstAddress = !addresses.length;
+
+    if (addresses.find((add) => add.id === data.id)) {
+      await this.prismaService.addresses.update({
+        where: {
+          id: data.id,
+        },
+        data: {
+          country: data.country,
+          city: data.city,
+          address1: data.address1,
+          address2: data.address2,
+          postcode: data.postcode,
+        },
+      });
+
+      return;
+    }
 
     await this.prismaService.addresses.create({
       data: {
@@ -120,5 +204,33 @@ export class UsersService {
     return true;
   }
 
-  async getOrders(userId: number) {}
+  async getOrders(userId: number) {
+    const orders = await this.prismaService.orders.findMany({
+      where: {
+        user: {
+          id: userId,
+        },
+      },
+      select: {
+        id: true,
+        totalPrice: true,
+        createdAt: true,
+        _count: {
+          select: {
+            OrderedProducts: true,
+          },
+        },
+      },
+      orderBy: {
+        createdAt: 'desc',
+      },
+    });
+
+    return orders.map((order) => ({
+      ...order,
+      productsCount: order._count.OrderedProducts,
+    }));
+
+    // const products = await this.ordersService.getOrderProducts();
+  }
 }
