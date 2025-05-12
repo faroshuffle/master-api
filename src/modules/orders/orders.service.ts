@@ -157,6 +157,7 @@ export class OrdersService {
             productId: product.product_id,
             quantity: product.quantity,
             order: { connect: { id: Number(orderId) } },
+            merchant: { connect: { id: merchantId } },
           },
         });
 
@@ -168,6 +169,7 @@ export class OrdersService {
           productId: product.product_id,
           quantity: product.quantity,
           order: { connect: { id: Number(orderId) } },
+          merchant: { connect: { id: merchantId } },
         },
       });
     }

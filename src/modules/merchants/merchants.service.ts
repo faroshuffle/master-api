@@ -51,6 +51,19 @@ export class MerchantsService {
       },
     });
 
+    await this.prismaService.themes.create({
+      data: {
+        merchant: { connect: { id: merchantId } },
+        isActive: true,
+        background: '#efefef',
+        primary: '#3454d1',
+        border: '#34d1bf',
+        card: '#d1345b',
+        text: '#000',
+        notification: '#000',
+      },
+    });
+
     fs.mkdirSync(`${process.cwd()}/builds/${merchantId}`, { recursive: true });
   }
 }

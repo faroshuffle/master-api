@@ -23,6 +23,10 @@ import { UsersModule } from './modules/users/users.module';
 import { OrdersModule } from './modules/orders/orders.module';
 import { BuildsModule } from './modules/builds/builds.module';
 import { SocketsService } from './services/sockets.service';
+import { AnalyticsModule } from './modules/analytics/analytics.module';
+import { ThemeModule } from './modules/theme/theme.module';
+import { FirebaseService } from './services/firebase.service';
+import { NotificationsModule } from './modules/notifications/notifications.module';
 
 @Module({
   imports: [
@@ -44,6 +48,9 @@ import { SocketsService } from './services/sockets.service';
     UsersModule,
     OrdersModule,
     BuildsModule,
+    AnalyticsModule,
+    ThemeModule,
+    NotificationsModule,
   ],
   providers: [
     {
@@ -56,6 +63,7 @@ import { SocketsService } from './services/sockets.service';
     CacheService,
     StripeService,
     SocketsService,
+    FirebaseService,
   ],
 })
 export class AppModule {}

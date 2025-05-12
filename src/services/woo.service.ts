@@ -57,19 +57,49 @@ export class WooService {
     };
   }
 
+  async getAnalyticsProducts(
+    productIds: number[],
+    wooCommerceKeys: WooCommerceKeysTypes,
+  ) {
+    const rest = this._getWooCommerceInstance(wooCommerceKeys);
+    const { data } = await rest.get('products', {
+      include: productIds,
+    });
+
+    return data.map((product) => ({
+      name: product.name,
+      image: product.images[0].src,
+      id: product.id,
+    }));
+  }
+
   async getPublicProducts(
-    { currentPage = '1' }: GetProductsParamsDto,
+    { currentPage = '1', category, minAmount, maxAmount }: GetProductsParamsDto,
     wooCommerceKeys: WooCommerceKeysTypes,
   ) {
     try {
       const rest = this._getWooCommerceInstance(wooCommerceKeys);
 
-      const { data, headers } = await rest.get('products', {
+      const payload: any = {
         stock_status: 'instock',
         status: 'publish',
         per_page: 10,
         page: parseInt(currentPage),
-      });
+      };
+
+      if (category) {
+        payload.category = Number(category);
+      }
+
+      if (minAmount) {
+        payload.min_price = Number(minAmount);
+      }
+
+      if (maxAmount) {
+        payload.max_amount = Number(maxAmount);
+      }
+
+      const { data, headers } = await rest.get('products', payload);
 
       return {
         products: data.map((product) => ({
@@ -292,10 +322,7 @@ export class WooService {
           id: product.id,
           name: product.name,
           price: product.price,
-          image: product.images[0].src.replace(
-            'http://localhost:8888',
-            this.configService.get('localhost_src_replacement'),
-          ),
+          image: product.images[0].src,
         };
       }),
     );

@@ -8,7 +8,10 @@ import {
 } from '@nestjs/common';
 import { ProductsService } from './products.service';
 import { WooCommerceKeysTypes } from '../../../constants/WooCommerceKeys.types';
-import { GetPrivateProductsParamsDto } from './products.dto';
+import {
+  GetPrivateProductsParamsDto,
+  GetProductsParamsDto,
+} from './products.dto';
 
 @Controller('private/products')
 export class ProductsPrivateController {
@@ -30,6 +33,27 @@ export class ProductsPrivateController {
       return { success: true, data };
     } catch (e) {
       console.log(e);
+      this.logger.error(e);
+      throw new HttpException(e.message, e.status);
+    }
+  }
+
+  @Get('/public')
+  async getPublicProducts(
+    @Query() params: GetProductsParamsDto,
+    @Headers('merchantid') merchantId: number,
+    @Headers('woocommercekeys') wooCommerceKeys: WooCommerceKeysTypes,
+  ) {
+    try {
+      const data = await this.productsService.getProducts(
+        params,
+        wooCommerceKeys,
+        merchantId,
+        null,
+      );
+
+      return { success: true, data };
+    } catch (e) {
       this.logger.error(e);
       throw new HttpException(e.message, e.status);
     }

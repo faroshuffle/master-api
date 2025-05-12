@@ -7,14 +7,10 @@ import {
 } from './users.dto';
 import { compare, hash } from 'bcrypt';
 import { GetPrivateProductsParamsDto } from '../products/products.dto';
-import { OrdersService } from '../orders/orders.service';
 
 @Injectable()
 export class UsersService {
-  constructor(
-    private readonly prismaService: PrismaService,
-    private readonly ordersService: OrdersService,
-  ) {}
+  constructor(private readonly prismaService: PrismaService) {}
 
   async getUsers(merchantId: number, params: GetPrivateProductsParamsDto) {
     const currentPage = Number(params.currentPage) - 1;
@@ -230,7 +226,5 @@ export class UsersService {
       ...order,
       productsCount: order._count.OrderedProducts,
     }));
-
-    // const products = await this.ordersService.getOrderProducts();
   }
 }

@@ -5,7 +5,8 @@
 // Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
 
 generator client {
-  provider = "prisma-client-js"
+  provider        = "prisma-client-js"
+  previewFeatures = ["typedSql"]
 }
 
 datasource db {
@@ -27,6 +28,9 @@ model Merchants {
   recommendationsSettings RecommendationsSettings?
   Orders                  Orders[]
   BuildSettings           BuildSettings[]
+  OrderedProducts         OrderedProducts[]
+  Theme                   Themes[]
+  FirebaseTokens          FirebaseTokens[]
 
   @@map("merchants")
 }
@@ -135,12 +139,14 @@ model Addresses {
 }
 
 model OrderedProducts {
-  id          Int    @id @default(autoincrement())
-  variationId Int?   @map("variation_id")
-  productId   Int    @map("product_id")
+  id          Int       @id @default(autoincrement())
+  variationId Int?      @map("variation_id")
+  productId   Int       @map("product_id")
   quantity    Int
-  order       Orders @relation(fields: [orderId], references: [id])
-  orderId     Int    @map("order_id")
+  order       Orders    @relation(fields: [orderId], references: [id])
+  orderId     Int       @map("order_id")
+  merchant    Merchants @relation(fields: [merchantId], references: [id])
+  merchantId  Int       @map("merchant_id")
 
   @@map("ordered_products")
 }
@@ -171,4 +177,29 @@ model BuildSettings {
   merchantId    Int       @unique @map("merchant_id")
 
   @@map("build_settings")
+}
+
+model Themes {
+  id           Int       @id @default(autoincrement())
+  merchant     Merchants @relation(fields: [merchantId], references: [id])
+  merchantId   Int       @map("merchant_id")
+  isActive     Boolean   @map("is_active")
+  background   String
+  primary      String
+  border       String
+  card         String
+  text         String
+  notification String
+  createdAt    DateTime  @default(now()) @map("created_at")
+
+  @@map("themes")
+}
+
+model FirebaseTokens {
+  id         Int       @id @default(autoincrement())
+  merchant   Merchants @relation(fields: [merchantId], references: [id])
+  merchantId Int       @map("merchant_id")
+  token      String
+
+  @@map("firebase_tokens")
 }
