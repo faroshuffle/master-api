@@ -20,9 +20,12 @@ export class NotificationsController {
     @Body() body: NotificationsDto,
   ) {
     try {
-      await this.notificationsService.sendNotification(merchantId, body);
+      const response = await this.notificationsService.sendNotification(
+        merchantId,
+        body,
+      );
 
-      return { success: true };
+      return { success: true, count: response.successCount };
     } catch (e) {
       this.logger.error(e);
       throw new HttpException(e.message, e.status);

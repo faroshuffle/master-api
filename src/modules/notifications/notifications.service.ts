@@ -11,6 +11,17 @@ export class NotificationsService {
   ) {}
 
   async saveToken(merchantId: number, token: string) {
+    const isTokenSaved = await this.prisma.firebaseTokens.findFirst({
+      where: {
+        merchant: { id: merchantId },
+        token,
+      },
+    });
+
+    if (isTokenSaved) {
+      return;
+    }
+
     await this.prisma.firebaseTokens.create({
       data: { merchant: { connect: { id: merchantId } }, token },
     });

@@ -29,6 +29,7 @@ export class ProductsPrivateController {
         wooCommerceKeys,
         params,
       );
+      data.products.forEach((product) => console.log(product.id));
 
       return { success: true, data };
     } catch (e) {

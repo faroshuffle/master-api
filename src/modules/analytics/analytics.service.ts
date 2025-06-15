@@ -5,6 +5,7 @@ import {
   getProductsByMonth,
   getActiveUsersLastMonth,
   getBestPerformingProductAllTime,
+  getMostSoldProduct,
 } from '@prisma/client/sql';
 import { WooService } from '../../services/woo.service';
 import { WooCommerceKeysTypes } from '../../../constants/WooCommerceKeys.types';
@@ -133,6 +134,26 @@ export class AnalyticsService {
       name: bestPerformingProductAllTime.name,
       image: bestPerformingProductAllTime.image,
       score: Number(tempBestPerformingProductAllTime.score),
+    };
+  }
+
+  async getMostSoldProduct(
+    merchantId: number,
+    wooCommerceKeys: WooCommerceKeysTypes,
+  ) {
+    const [tempBestPerformingProductAllTime] =
+      await this.prismaService.$queryRawTyped(getMostSoldProduct(merchantId));
+    const [bestPerformingProductAllTime] =
+      await this.wooService.getAnalyticsProducts(
+        [tempBestPerformingProductAllTime.product_id],
+        wooCommerceKeys,
+      );
+
+    return {
+      id: bestPerformingProductAllTime.id,
+      name: bestPerformingProductAllTime.name,
+      image: bestPerformingProductAllTime.image,
+      orders: Number(tempBestPerformingProductAllTime.count),
     };
   }
 }

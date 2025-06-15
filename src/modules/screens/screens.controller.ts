@@ -7,6 +7,7 @@ import {
   Param,
   Post,
   Headers,
+  Put,
 } from '@nestjs/common';
 import { ScreensService } from './screens.service';
 import { CreateScreenDto } from './screens.dto';
@@ -46,6 +47,26 @@ export class ScreensController {
   ) {
     try {
       const response = await this.screensService.createScreen(merchantId, body);
+
+      return { success: true, screens: response };
+    } catch (e) {
+      this.logger.error(e);
+      throw new HttpException(e.message, e.status);
+    }
+  }
+
+  @Put(':screenId')
+  async updateScreenName(
+    @Headers('merchantid') merchantId: number,
+    @Param('screenId') screenId: string,
+    @Body() body: CreateScreenDto,
+  ) {
+    try {
+      const response = await this.screensService.updateScreen(
+        merchantId,
+        screenId,
+        body,
+      );
 
       return { success: true, screens: response };
     } catch (e) {

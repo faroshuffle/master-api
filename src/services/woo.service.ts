@@ -34,7 +34,7 @@ export class WooService {
     const rest = this._getWooCommerceInstance(wooCommerceKeys);
 
     const { data, headers } = await rest.get('products', {
-      per_page: 10,
+      per_page: 100,
       page: parseInt(currentPage),
       search,
     });
@@ -164,7 +164,7 @@ export class WooService {
     return {
       id: data.id,
       name: data.name,
-      description: data.description,
+      description: data.short_description,
       price: data.price,
       on_sale: data.on_sale,
       images: data.images.map((image) =>
@@ -185,7 +185,7 @@ export class WooService {
     const rest = this._getWooCommerceInstance(wooCommerceKeys);
     const { data } = await rest.get(`products/${body.productId}/variations`);
 
-    return data[0].id;
+    return data[0] ? data[0].id : null;
   }
 
   async getCartProducts(
@@ -197,20 +197,35 @@ export class WooService {
 
     for (const obj of body.data) {
       const { data: product } = await rest.get(`products/${obj.productId}`);
-      const { data } = (await rest.get(
-        `products/${obj.productId}/variations/${obj.variationId}`,
-      )) as { data: ProductType };
+      if (obj.variationId) {
+        const { data } = (await rest.get(
+          `products/${obj.productId}/variations/${obj.variationId}`,
+        )) as { data: ProductType };
 
-      response.push({
-        id: data.id,
-        name: product.name,
-        price: data.price,
-        on_sale: data.on_sale,
-        image: data.image.src.replace(
-          'http://localhost:8888',
-          this.configService.get('localhost_src_replacement'),
-        ),
-      });
+        response.push({
+          id: data.id,
+          name: product.name,
+          price: data.price,
+          on_sale: data.on_sale,
+          product_id: obj.productId,
+          image: data.image.src.replace(
+            'http://localhost:8888',
+            this.configService.get('localhost_src_replacement'),
+          ),
+        });
+      } else {
+        response.push({
+          id: product.id,
+          name: product.name,
+          price: product.price,
+          on_sale: product.on_sale,
+          product_id: obj.productId,
+          image: product.images[0].src.replace(
+            'http://localhost:8888',
+            this.configService.get('localhost_src_replacement'),
+          ),
+        });
+      }
     }
 
     return response;

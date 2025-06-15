@@ -85,6 +85,7 @@ export class OrdersService {
         },
         take: 10,
         skip: 10 * currentPage,
+        orderBy: { createdAt: 'desc' },
       }),
       this.prismaService.orders.count({
         where: {

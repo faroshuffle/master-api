@@ -1,4 +1,4 @@
-import { IsArray, IsNumber, IsString, ValidateNested } from 'class-validator';
+import { IsArray, IsNumber, IsOptional, IsString, ValidateNested } from 'class-validator';
 import { Type } from 'class-transformer';
 
 class Attribute {
@@ -27,6 +27,7 @@ class CartProductDto {
   productId: number;
 
   @IsNumber()
+  @IsOptional()
   variationId: number;
 }
 

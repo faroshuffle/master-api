@@ -45,14 +45,14 @@ export class CheckoutService {
     const products = cartData.map((item) => {
       if (item.variationId) {
         return {
-          product_id: item.id,
+          product_id: item.product_id,
           variation_id: item.variationId,
           quantity: item.quantity,
         };
       }
 
       return {
-        product_id: item.id,
+        product_id: item.product_id,
         quantity: item.quantity,
       };
     });
@@ -78,7 +78,7 @@ export class CheckoutService {
         merchantId,
         userId,
         UserActionType.ORDER,
-        product.id,
+        product.product_id,
       );
     }
 

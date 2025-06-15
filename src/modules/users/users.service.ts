@@ -19,6 +19,20 @@ export class UsersService {
       this.prismaService.users.findMany({
         where: {
           merchant: { id: merchantId },
+          OR: [
+            {
+              firstName: {
+                contains: params.search,
+                mode: 'insensitive',
+              },
+            },
+            {
+              lastName: {
+                contains: params.search,
+                mode: 'insensitive',
+              },
+            },
+          ],
         },
         take: 10,
         skip: 10 * currentPage,

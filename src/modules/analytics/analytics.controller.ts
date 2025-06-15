@@ -69,4 +69,22 @@ export class AnalyticsController {
       throw new HttpException(e.message, e.status);
     }
   }
+
+  @Get('most-sold-product')
+  async getMostSoldProduct(
+    @Headers('merchantid') merchantId: number,
+    @Headers('woocommercekeys') wooCommerceKeys: WooCommerceKeysTypes,
+  ) {
+    try {
+      const response = await this.analyticsService.getMostSoldProduct(
+        merchantId,
+        wooCommerceKeys,
+      );
+
+      return { success: true, response };
+    } catch (e) {
+      this.logger.error(e);
+      throw new HttpException(e.message, e.status);
+    }
+  }
 }

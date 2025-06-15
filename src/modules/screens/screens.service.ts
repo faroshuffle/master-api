@@ -66,4 +66,22 @@ export class ScreensService {
 
     return this.getScreens(merchantId);
   }
+
+  async updateScreen(
+    merchantId: number,
+    screenId: string,
+    body: CreateScreenDto,
+  ) {
+    await this.prismaService.screens.update({
+      where: {
+        merchant: { id: merchantId },
+        id: Number(screenId),
+      },
+      data: {
+        name: body.name,
+      },
+    });
+
+    return this.getScreens(merchantId);
+  }
 }

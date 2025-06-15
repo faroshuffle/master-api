@@ -17,11 +17,13 @@ export class FirebaseService {
         body: message.subtitle,
       },
     }));
-    admin
+
+    return admin
       .messaging()
       .sendEach(messages)
       .then((response) => {
         console.log(response);
+        return response;
       });
   }
 }
